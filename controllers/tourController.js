@@ -3,13 +3,22 @@ const Tour = require('../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
+    // Build query
+    // 1) Filtering
     const queryObj = { ...req.query };
     const excludedFields = ['page', 'sort', 'limit', 'fields'];
 
     excludedFields.forEach((el) => delete queryObj[el]);
 
-    // Build query
-    const query = Tour.find(queryObj);
+    // 2) Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    // Parse operators to mongoDB operators
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => {
+      return `$${match}`;
+    });
+
+    const query = Tour.find(JSON.parse(queryStr));
+
 
     // Another way to query
     // const query = await Tour.find()
