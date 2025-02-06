@@ -17,7 +17,19 @@ exports.getAllTours = async (req, res) => {
       return `$${match}`;
     });
 
-    const query = Tour.find(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
+
+    // SORTING
+    if (req.query.sort) {
+      // sort by multiple fields. In the URL, separate the fields by comma
+      // and here replace the comma with space
+      // urls can't have spaces and mongoose uses spaces to separate fields
+      const sortBy = req.query.sort.split(',').join(' ');
+      query = query.sort(sortBy);
+    } else {
+      // Default sorting
+      query = query.sort('-createdAt');
+    }
 
 
     // Another way to query
