@@ -1,4 +1,5 @@
 const Tour = require('../models/tourModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
@@ -7,69 +8,18 @@ exports.aliasTopTours = (req, res, next) => {
   next();
 };
 
+
 exports.getAllTours = async (req, res) => {
   try {
     // Build query
-    // 1) Filtering
-    const queryObj = { ...req.query };
-    const excludedFields = ['page', 'sort', 'limit', 'fields'];
-
-    excludedFields.forEach((el) => delete queryObj[el]);
-
-    // 2) Advanced filtering
-    let queryStr = JSON.stringify(queryObj);
-    // Parse operators to mongoDB operators
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => {
-      return `$${match}`;
-    });
-
-    let query = Tour.find(JSON.parse(queryStr));
-
-    // SORTING
-    if (req.query.sort) {
-      // sort by multiple fields. In the URL, separate the fields by comma
-      // and here replace the comma with space
-      // urls can't have spaces and mongoose uses spaces to separate fields
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy);
-    } else {
-      // Default sorting
-      query = query.sort('-createdAt');
-    }
-
-    // FIELD LIMITING
-
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      // NOTE: select only certain fields is called projecting
-      query = query.select(fields);
-    } else {
-      // Exclude __v field (the - sign means exclude)
-      query = query.select('-__v');
-    }
-
-    // PAGINATION
-    const page = req.query.page * 1 || 1;
-    const limit = req.query.limit * 1 || 100;
-    // skip the first n results
-    const skip = (page - 1) * limit;
-
-    query = query.skip(skip).limit(limit);
-
-    if (req.query.page) {
-      const numTours = await Tour.countDocuments();
-      if (skip >= numTours) throw new Error('This page does not exist');
-    }
-
-    // Another way to query
-    // const query = await Tour.find()
-    //   .where('duration')
-    //   .equals(5)
-    //   .where('difficulty')
-    //   .equals('easy');
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
     // Execute query
-    const tours = await query;
+    const tours = await features.query;
 
     res.status(200).json({
       status: 'success',
@@ -160,5 +110,49 @@ exports.deleteTour = async (req, res) => {
       message: error,
     });
   }
+};
 
+exports.getTourStats = async (req, res) => {
+  try {
+    const stats = await Tour.aggregate([
+      {
+        $match: {
+          ratingsAverage: { $gte: 4.5 }
+        }
+      },
+      {
+        $group: {
+          // field to group by
+          _id: '$difficulty',
+          numTours: { $sum: 1 },
+          numRatings: { $sum: '$ratingsQuantity' },
+          avgRating: { $avg: '$ratingsAverage' },
+          avgPrice: { $avg: '$price' },
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' },
+        },
+      },
+      {
+        // Here it must be used the field name from the previous stage
+        $sort: { minPrice: 1 }, // 1 menas ascending order
+      },
+      // stages can be repeated
+      //{
+      //  // _id here is the difficulty because it was the field used in the previous stages
+      //  $match: { _id: { $ne: 'easy' } },
+      //},
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        stats,
+      },
+    });
+  } catch (error) {
+    res.status(404).json({
+      status: 'fail',
+      message: error,
+    });
+  }
 };
