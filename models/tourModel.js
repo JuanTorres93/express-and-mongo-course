@@ -55,6 +55,10 @@ const tourSchema = new mongoose.Schema({
     select: false,
   },
   startDates: [Date],
+  secretTour: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   toJSON: { virtuals: true }, // enable virtual properties in the output
   toObject: { virtuals: true }, // enable virtual properties in the output
@@ -84,6 +88,19 @@ tourSchema.pre('save', function (next) {
 tourSchema.post('save', function (doc, next) {
   // doc is the document that was saved
   // console.log(doc);
+  next();
+});
+
+// Query middleware
+tourSchema.pre(/^find/, function (next) {
+  // this points to the query object
+  this.find({ secretTour: { $ne: true } });
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  // docs is the documents that were found
+  // console.log(docs);
   next();
 });
 
