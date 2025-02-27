@@ -90,7 +90,7 @@ const tourSchema = new mongoose.Schema({
     address: String,
     description: String,
   },
-  // Embedding documents (must be an array)
+  // DOC Embedding documents (must be an array)
   locations: [
     {
       type: {
@@ -102,6 +102,13 @@ const tourSchema = new mongoose.Schema({
       address: String,
       description: String,
       day: Number,
+    }
+  ],
+  // DOC Referencing documents, first step
+  guides: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User',
     }
   ],
 }, {
@@ -141,6 +148,17 @@ tourSchema.pre(/^find/, function (next) {
   // this points to the query object
   this.find({ secretTour: { $ne: true } });
   next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+
+  // DOC Referencing documents, second and last step
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  })
+
+  next()
 });
 
 tourSchema.post(/^find/, function (docs, next) {
