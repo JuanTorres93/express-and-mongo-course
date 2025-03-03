@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema({
   review: {
     type: String,
-    required: [True, 'Review cannot be empty'],
+    required: [true, 'Review cannot be empty'],
   },
   rating: {
     type: Number,
@@ -27,6 +27,18 @@ const reviewSchema = new mongoose.Schema({
 }, {
   toJSON: { virtuals: true }, // enable virtual properties in the output
   toObject: { virtuals: true }, // enable virtual properties in the output
+});
+
+reviewSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'tour',
+    select: 'name',
+  }).populate({
+    path: 'tour',
+    select: 'name photo',
+  });
+
+  next()
 });
 
 const Review = mongoose.model('Review', reviewSchema);
