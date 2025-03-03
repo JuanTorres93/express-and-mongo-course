@@ -116,7 +116,7 @@ const tourSchema = new mongoose.Schema({
   toObject: { virtuals: true }, // enable virtual properties in the output
 });
 
-// Virtual properties are not persisted to the database.
+// DOC Virtual properties are not persisted to the database.
 // They seem to be something like views in SQL.
 // IMPORTANT MUST be used a regular function, not an arrow function.
 // Arrow functions do not get their own 'this' keyword.
@@ -151,7 +151,6 @@ tourSchema.pre(/^find/, function (next) {
 });
 
 tourSchema.pre(/^find/, function (next) {
-
   // DOC Referencing documents, second and last step
   this.populate({
     path: 'guides',
