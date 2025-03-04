@@ -1,7 +1,12 @@
 const express = require('express');
 const authController = require('../controllers/authController');
 const reviewController = require('../controllers/reviewController');
-const router = express.Router();
+
+// DOC: mergeParams is needed to access the tourId in the reviewRouter
+// This is because by default a router only has access to its own parameters
+const router = express.Router({
+  mergeParams: true
+});
 
 
 router
