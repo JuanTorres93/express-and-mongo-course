@@ -127,6 +127,20 @@ tourSchema.virtual('durationWeeks').get(function () {
   return this.duration / 7;
 })
 
+// DOC: Virtual populate is a way to make a parent 
+// document aware of its children.
+// It is not enough to just specify the virtual here
+// we also need to populate it in the query.
+tourSchema.virtual('reviews', {
+  ref: 'Review',
+  // foreignField is the field in the child document that
+  // refers to the parent document.
+  // it actually stores the id
+  foreignField: 'tour',
+  // localField is the id of the tour in this document
+  localField: '_id',
+});
+
 // Middleware
 // pre runs before an event.
 // This specific middleware runs before .save() and .create().
