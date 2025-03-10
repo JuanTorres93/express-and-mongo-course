@@ -116,6 +116,14 @@ const tourSchema = new mongoose.Schema({
   toObject: { virtuals: true }, // enable virtual properties in the output
 });
 
+// DOC create indexes for field names.
+// 1 means ascending order, -1 means descending order.
+tourSchema.index({ slug: 1 });
+// DOC compound index. When creating a compound index,
+// it will also work for the individual fields. So it is 
+// not necessary to create an index for each field.
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+
 // DOC Virtual properties are not persisted to the database.
 // They seem to be something like views in SQL.
 // IMPORTANT MUST be used a regular function, not an arrow function.
