@@ -30,6 +30,9 @@ const reviewSchema = new mongoose.Schema({
   toObject: { virtuals: true }, // enable virtual properties in the output
 });
 
+// Compound index to ensure that a user can only write one review per tour
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 reviewSchema.pre(/^find/, function (next) {
   // NOTE: Use uncommented code due to design choices
   //this.populate({
