@@ -64,12 +64,17 @@ reviewSchema.statics.calcAverageRatings = async function (tourId) {
     },
   ]);
 
-  console.log(stats);
-
-  await Tour.findByIdAndUpdate(tourId, {
-    ratingsQuantity: stats[0].nRating,
-    ratingsAverage: stats[0].avgRating,
-  });
+  if (stats.length !== 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: stats[0].nRating,
+      ratingsAverage: stats[0].avgRating,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: 0,
+      ratingsAverage: 4.5,
+    });
+  }
 }
 
 reviewSchema.post('save', function () {
@@ -79,6 +84,31 @@ reviewSchema.post('save', function () {
   // call the static method
   this.constructor.calcAverageRatings(this.tour);
 })
+
+// Jonas does the updating with these two middlewares, but
+// they can be combined in one. Because the post middleware
+// has access to the document that was just saved.
+// These two middlewares work together to update the ratings
+// when a review is updated 
+//reviewSchema.pre(/^findOneAnd/, async function (next) {
+//  // this is the current query
+//  // get the current review and store it in the query
+//  this.r = await this.findOne();
+//  console.log(this.r);
+//  next();
+//});
+//
+//reviewSchema.post(/^findOneAnd/, async function () {
+//  // await this.findOne(); does NOT work here, query has already executed
+//
+//  // this.r is a review document, so it can access
+//  // the model (Review) using .constructor
+//  await this.r.constructor.calcAverageRatings(this.r.tour);
+//});
+
+reviewSchema.post(/^findOneAnd/, async function (doc) {
+  await doc.constructor.calcAverageRatings(doc.tour._id);
+});
 
 const Review = mongoose.model('Review', reviewSchema);
 
