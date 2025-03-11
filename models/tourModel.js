@@ -126,6 +126,11 @@ tourSchema.index({ slug: 1 });
 // not necessary to create an index for each field.
 tourSchema.index({ price: 1, ratingsAverage: -1 });
 
+// DOC Geospatial index
+// This is needed to make geospatial queries.
+// 2dsphere is the type of index for geospatial data.
+tourSchema.index({ startLocation: '2dsphere' });
+
 // DOC Virtual properties are not persisted to the database.
 // They seem to be something like views in SQL.
 // IMPORTANT MUST be used a regular function, not an arrow function.

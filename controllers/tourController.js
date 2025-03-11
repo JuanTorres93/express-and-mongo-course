@@ -1,6 +1,6 @@
 const Tour = require('../models/tourModel');
+const AppError = require('../utils/appError');
 // const APIFeatures = require('../utils/apiFeatures');
-// const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const factory = require('./handlerFactory');
 
@@ -105,5 +105,37 @@ exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
       plan,
     },
   });
+});
 
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+  const { distance, latlng, unit } = req.params;
+  const [lat, lng] = latlng.split(',');
+
+  if (!lat || !lng) {
+    next(new AppError('Please provide latitude and longitude in the format lat,lng.', 400));
+  }
+
+  // distance is divided by the radius of the Earth
+  // Earth radius in mi: 3963.2
+  // Earth radius in km: 6378.1
+  // It is needed because mongodb expects the distance in radians
+  const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+  const tours = await Tour.find({
+    // For geospatial queries, it is needed to create an index
+    // in the field. In this case, statLocation is the field
+    startLocation: {
+      $geoWithin: {
+        $centerSphere: [[lng, lat], radius]
+      }
+    }
+  });
+
+  res.status(200).json({
+    status: 'success',
+    results: tours.length,
+    data: {
+      data: tours,
+    },
+  });
 });
