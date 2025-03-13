@@ -1,6 +1,14 @@
 extends base
 include _reviewCard
 
+block append head
+  //- NOTE It's not going to work because it needed a credit card to
+  //- create the mapbox account. I have just used copilot to create
+  //- these lines. The rest of this part of the course I will just watch
+  //- and comeback when I need a map functionality in my project.
+  script(src='https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js')
+  link(href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css', rel='stylesheet')
+
 mixin overviewBox(label, text, icon)
     .overview-box__detail
       svg.overview-box__icon
@@ -62,7 +70,7 @@ block content
               class=`picture-box__img--${i + 1}`)
 
     section.section-map
-      #map
+      #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
     section.section-reviews
       .reviews
