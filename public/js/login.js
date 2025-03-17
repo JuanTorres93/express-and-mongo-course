@@ -22,3 +22,17 @@ export const login = async (email, password) => {
     showAlert('error', error.response.data.message);
   }
 };
+
+export const logout = async () => {
+  try {
+    const res = await axios({
+      method: 'GET',
+      url: 'http://localhost:3000/api/v1/users/logout',
+    });
+
+    // .reload(true) forces server to reload the page and not use browser cache
+    if (res.data.status === 'success') location.reload(true);
+  } catch (error) {
+    showAlert('error', 'Error logging out! Try again.');
+  }
+};
