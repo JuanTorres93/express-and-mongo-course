@@ -59,6 +59,14 @@ app.use(
     limit: '10kb', // Limit the body size to 10kb
   })
 );
+// This middleware is used to parse data from the URL-encoded
+// form bodies. It is used to parse data from forms
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: '10kb',
+  })
+);
 // Parse data from cookies
 // Accessed by req.cookies
 app.use(cookieParser());
