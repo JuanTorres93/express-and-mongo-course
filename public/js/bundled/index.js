@@ -696,12 +696,14 @@ if (loginForm) loginForm.addEventListener('submit', (e)=>{
 if (logOutBtn) logOutBtn.addEventListener('click', (0, _login.logout));
 if (userDataForm) userDataForm.addEventListener('submit', (e)=>{
     e.preventDefault();
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    (0, _updateSettings.updateSettings)({
-        name,
-        email
-    }, 'data');
+    // We need to "fake" a form submission, because we are sending a file.
+    // In this way, it is sent as a multipart form.
+    const form = new FormData();
+    form.append('name', document.getElementById('name').value);
+    form.append('email', document.getElementById('email').value);
+    form.append('photo', document.getElementById('photo').files[0]);
+    // axios will recognize that it is a multipart form and will handle it correctly.
+    (0, _updateSettings.updateSettings)(form, 'data');
 });
 if (userPasswordForm) userPasswordForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
