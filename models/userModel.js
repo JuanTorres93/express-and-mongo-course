@@ -17,7 +17,8 @@ const userSchema = new mongoose.Schema({
     validate: [validator.isEmail, 'Please provide a valid email'],
   },
   photo: {
-    type: String
+    type: String,
+    default: 'default.jpg',
   },
   role: {
     type: String,
@@ -41,7 +42,7 @@ const userSchema = new mongoose.Schema({
         return el === this.password;
       },
       message: 'Passwords are not the same!',
-    }
+    },
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
@@ -80,13 +81,19 @@ userSchema.pre(/^find/, function (next) {
   next();
 });
 
-userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
-  return await bcrypt.compare(candidatePassword, userPassword)
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
 };
 
 userSchema.methods.changedPasswordAfter = async function (JWTTimestamp) {
   if (this.passwordChangedAt) {
-    const changedTimestamp = parseInt(this.passwordChangedAt.getTime() / 1000, 10);
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
     console.log(this.passwordChangedAt, JWTTimestamp);
 
     return JWTTimestamp < changedTimestamp;
@@ -105,7 +112,6 @@ userSchema.methods.createPasswordResetToken = function () {
     .digest('hex');
 
   console.log({ resetToken }, this.passwordResetToken);
-
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 

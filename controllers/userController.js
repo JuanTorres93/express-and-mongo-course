@@ -56,14 +56,6 @@ exports.getMe = (req, res, next) => {
 };
 
 exports.updateMe = catchAsync(async (req, res, next) => {
-  // TODO DELETE THESE DEBUG LOGS
-  console.log('req.file');
-  console.log(req.file);
-
-  // TODO DELETE THESE DEBUG LOGS
-  console.log('req.body');
-  console.log(req.body);
-
   // 1) Create error if user POSTs password data
   if (req.body.password || req.body.passwordConfirm) {
     return next(
@@ -76,6 +68,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
 
   // 2) Filtered out unwanted fields names that are not allowed to be updated
   const filteredBody = filterObj(req.body, 'name', 'email');
+
+  // Add photo field if exists for updating in DB
+  if (req.file) filteredBody.photo = req.file.filename;
 
   // 3) Update user document
   // option {new: true} returns the updated document, and not the old one
