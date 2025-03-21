@@ -1,5 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tour = require('../models/tourModel');
+const Booking = require('../models/bookingModel');
 const factory = require('./handlerFactory');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -19,7 +20,12 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     // REQUIRED when using prices
     mode: 'payment',
     // REQUIRED URL that will be called once the payment is successful
-    success_url: `${req.protocol}://${req.get('host')}`,
+    // IMPORTANT NOTE: The query params are just a workaround until the
+    // page has been deployed. THIS IS NOT SECURE. TODO: Change when
+    // the application is deployed.
+    success_url: `${req.protocol}://${req.get('host')}/?tour=${
+      req.params.tourId
+    }&user=${req.user.id}&price=${tour.price}`,
     // REQUIRED URL that the user goes if he decides to cancel the payment
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
     // This is called in a protected route, so we have access to the user object
@@ -59,4 +65,16 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     status: 'success',
     session,
   });
+});
+
+exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+  // TODO Change this workaround when the application is deployed
+  // Right now everyone can make bookings without paying
+  const { tour, user, price } = req.query;
+
+  if (!tour || !user || !price) return next();
+
+  await Booking.create({ tour, user, price });
+
+  res.redirect(req.originalUrl.split('?')[0]);
 });
