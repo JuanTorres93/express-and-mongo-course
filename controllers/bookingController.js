@@ -89,13 +89,10 @@ const createBookingCheckout = async (session) => {
   // Get the session that was created at the moment of
   // starting the checkout process
   // .client_reference_id was specified in the creation of the session
-  // TODO DELETE THESE DEBUG LOGS
-  console.log('session after payment completed');
-  console.log(session);
 
   const tour = session.client_reference_id;
   const user = (await User.findOne({ email: session.customer_email })).id;
-  const price = session.display_items[0].amount / 100;
+  const price = session.amount_total / 100;
 
   await Booking.create({ tour, user, price });
 };
@@ -103,9 +100,6 @@ const createBookingCheckout = async (session) => {
 exports.webhookCheckout = (req, res, next) => {
   // When stripe calls a webhook, it will add a header
   // containing a signature for our webhook
-
-  // TODO DELETE THESE DEBUG LOGS
-  console.log('WEBHOOK');
 
   const signature = req.headers['stripe-signature'];
   let event;
@@ -117,14 +111,7 @@ exports.webhookCheckout = (req, res, next) => {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
-
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('event');
-    console.log(event);
   } catch (error) {
-    // TODO DELETE THESE DEBUG LOGS
-    console.log('error');
-    console.log(error);
     // Send error to Stripe
     return res.status(400).send(`Webhook error: ${error.message}`);
   }
