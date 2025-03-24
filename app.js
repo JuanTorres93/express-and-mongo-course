@@ -18,6 +18,10 @@ const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 
 const app = express();
+// DOC: This is used to trust proxies. It is for heroku.
+// I'm leaving it here for future reference, but I'm using
+// another provider.
+// app.enable('trust proxy');
 
 // Use pug as the template engine
 app.set('view engine', 'pug');
