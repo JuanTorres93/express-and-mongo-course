@@ -54,7 +54,11 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
             // Description of the product
             description: tour.summary,
             // images must be light weight and hosted. (Deployed application)
-            images: [`https://www.natours.dev/img/tours/${tour.imageCover}`],
+            images: [
+              `${req.protocol}://${req.get('host')}/img/tours/${
+                tour.imageCover
+              }`,
+            ],
           },
         },
       },
@@ -99,6 +103,10 @@ const createBookingCheckout = async (session) => {
 exports.webhookCheckout = (req, res, next) => {
   // When stripe calls a webhook, it will add a header
   // containing a signature for our webhook
+
+  // TODO DELETE THESE DEBUG LOGS
+  console.log('WEBHOOK');
+
   const signature = req.headers['stripe-signature'];
   let event;
 
@@ -109,7 +117,14 @@ exports.webhookCheckout = (req, res, next) => {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
     );
+
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('event');
+    console.log(event);
   } catch (error) {
+    // TODO DELETE THESE DEBUG LOGS
+    console.log('error');
+    console.log(error);
     // Send error to Stripe
     return res.status(400).send(`Webhook error: ${error.message}`);
   }
