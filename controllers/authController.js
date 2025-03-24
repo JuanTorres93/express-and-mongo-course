@@ -24,7 +24,7 @@ const createSendToken = (user, statusCode, req, res) => {
 
     // DOC: req.headers is for heroku, I'm leaving it here for future reference,
     // but I'm using other provider
-    secure: req.secure, // req.secure || req.headers['x-forwarded-proto'] === 'https',
+    secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
   };
 
   res.cookie('jwt', token, cookieOptions);
