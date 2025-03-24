@@ -26,7 +26,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     //success_url: `${req.protocol}://${req.get('host')}/?tour=${
     //  req.params.tourId
     //}&user=${req.user.id}&price=${tour.price}`,
-    success_url: `${req.protocol}://${req.get('host')}/my-tours`,
+    success_url: `${req.protocol}://${req.get('host')}/my-tours?alert=booking`,
     // REQUIRED URL that the user goes if he decides to cancel the payment
     cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
     // This is called in a protected route, so we have access to the user object
