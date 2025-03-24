@@ -17,6 +17,7 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
+const bookingController = require('./controllers/bookingController');
 
 const app = express();
 // DOC: This is used to trust proxies. It is for heroku.
@@ -67,6 +68,17 @@ const limiter = rateLimit({
   message: 'Too many requests from this IP, please try again in an hour!',
 });
 app.use('/api', limiter);
+
+// The webhookCheckout function expects the body to be
+// in raw format (because is the Stripe implementation).
+// So we this endpoint here, before the body parser
+// middleware, to get the raw body.
+app.post(
+  '/webhook-checkout',
+  // Parse the body
+  express.raw({ type: 'application/json' }),
+  bookingController.webhookCheckout
+);
 
 // Body parser, reading data from body into req.body
 app.use(

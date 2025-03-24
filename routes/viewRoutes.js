@@ -7,9 +7,9 @@ const router = express.Router();
 
 router.get(
   '/',
-  // TODO remove this middleware when the application is deployed
-  // it is just a workaround
-  bookingController.createBookingCheckout,
+  // DOC: this middleware was for development purposes
+  // it allowed to create bookings without webhooks
+  // bookingController.createBookingCheckout,
   authController.isLoggedIn,
   viewsController.getOverview
 );
